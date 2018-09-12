@@ -7,55 +7,53 @@ using namespace calc;
 
 namespace calc
 {
-bool operator ==(const Token& a, const Token& b)
-{
-	return a.type == b.type && a.value == b.value;
-}
-
-string_view GetTokenName(TokenType type)
-{
-	switch (type)
+	bool operator ==(const Token& a, const Token& b)
 	{
-	case calc::TT_END:
-		return "end";
-	case calc::TT_ERROR:
-		return "error";
-	case calc::TT_NUMBER:
-		return "number";
-	case calc::TT_PLUS:
-		return "+";
+		return a.type == b.type && a.value == b.value;
 	}
-	return "<UNEXPECTED!!!>";
-}
 
-std::ostream& operator<<(std::ostream& stream, const Token& token)
-{
-	stream << "Token(" << GetTokenName(token.type);
-	if (token.value)
+	string_view GetTokenName(TokenType type)
 	{
-		stream << ", " << *token.value;
+		switch (type)
+		{
+		case calc::TT_END:
+			return "end";
+		case calc::TT_ERROR:
+			return "error";
+		case calc::TT_NUMBER:
+			return "number";
+		case calc::TT_PLUS:
+			return "+";
+		}
+		return "<UNEXPECTED!!!>";
 	}
-	stream << ")";
-	return stream;
-}
+
+	std::ostream& operator<<(std::ostream& stream, const Token& token)
+	{
+		stream << "Token(" << GetTokenName(token.type);
+		if (token.value)
+		{
+			stream << ", " << *token.value;
+		}
+		stream << ")";
+		return stream;
+	}
 }
 
 namespace
 {
+	using TokenList = vector<Token>;
 
-using TokenList = vector<Token>;
-
-TokenList Tokenize(string_view text)
-{
-	TokenList results;
-	CalcLexer lexer{ text };
-	for (Token token = lexer.Read(); token.type != TT_END; token = lexer.Read())
+	TokenList Tokenize(string_view text)
 	{
-		results.emplace_back(move(token));
+		TokenList results;
+		CalcLexer lexer{ text };
+		for (Token token = lexer.Read(); token.type != TT_END; token = lexer.Read())
+		{
+			results.emplace_back(move(token));
+		}
+		return results;
 	}
-	return results;
-}
-
 }
 
 TEST_CASE("Can read one number", "[CalcLexer]") {
@@ -74,6 +72,15 @@ TEST_CASE("Can read one operator", "[CalcLexer]") {
 	REQUIRE(Tokenize("+"sv) == TokenList{
 		Token{ TT_PLUS },
 		});
+	REQUIRE(Tokenize("-"sv) == TokenList{
+		Token{ TT_MINUS },
+		});
+	REQUIRE(Tokenize("*"sv) == TokenList{
+		Token{ TT_MULTIPLY },
+		});
+	REQUIRE(Tokenize("/"sv) == TokenList{
+		Token{ TT_DIVIDE },
+		});
 }
 
 TEST_CASE("Can read expression tokens", "[CalcLexer]") {
@@ -83,6 +90,38 @@ TEST_CASE("Can read expression tokens", "[CalcLexer]") {
 		Token{ TT_NUMBER, "9"s },
 		Token{ TT_PLUS },
 		Token{ TT_NUMBER, "28"s },
+		});
+	REQUIRE(Tokenize("45-9-28"sv) == TokenList{
+		Token{ TT_NUMBER, "45"s },
+		Token{ TT_MINUS },
+		Token{ TT_NUMBER, "9"s },
+		Token{ TT_MINUS },
+		Token{ TT_NUMBER, "28"s },
+		});
+	REQUIRE(Tokenize("45*9*28"sv) == TokenList{
+		Token{ TT_NUMBER, "45"s },
+		Token{ TT_MULTIPLY },
+		Token{ TT_NUMBER, "9"s },
+		Token{ TT_MULTIPLY },
+		Token{ TT_NUMBER, "28"s },
+		});
+	REQUIRE(Tokenize("45/9/28"sv) == TokenList{
+		Token{ TT_NUMBER, "45"s },
+		Token{ TT_DIVIDE },
+		Token{ TT_NUMBER, "9"s },
+		Token{ TT_DIVIDE },
+		Token{ TT_NUMBER, "28"s },
+		});
+	REQUIRE(Tokenize("45/9+28-54*4"sv) == TokenList{
+		Token{ TT_NUMBER, "45"s },
+		Token{ TT_DIVIDE },
+		Token{ TT_NUMBER, "9"s },
+		Token{ TT_PLUS },
+		Token{ TT_NUMBER, "28"s },
+		Token{ TT_MINUS },
+		Token{ TT_NUMBER, "54"s },
+		Token{ TT_MULTIPLY },
+		Token{ TT_NUMBER, "4"s },
 		});
 #if 0 // fractional number support
 	REQUIRE(Tokenize("5+7.005"sv) == TokenList{

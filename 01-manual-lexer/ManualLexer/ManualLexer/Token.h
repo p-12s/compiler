@@ -12,7 +12,9 @@ enum TokenType
 	TT_ERROR,
 	TT_NUMBER,
 	TT_PLUS,
-	// TODO: add other tokens here.
+	TT_MINUS,
+	TT_MULTIPLY,
+	TT_DIVIDE
 };
 
 struct Token
