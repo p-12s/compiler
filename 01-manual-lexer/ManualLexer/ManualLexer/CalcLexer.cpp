@@ -77,7 +77,13 @@ Token CalcLexer::Read()
 
 void CalcLexer::SkipSpaces()
 {
-	// TODO: skip whitespace characters - at least ' ', '\t' and '\n'.
+	while (m_position < m_sources.size() &&
+			(m_sources[m_position] == ' ' ||
+			m_sources[m_position] == '\t' ||
+			m_sources[m_position] == '\n'))
+	{
+		++m_position;
+	}
 }
 
 Token CalcLexer::ReadNumber(char head)
@@ -87,11 +93,21 @@ Token CalcLexer::ReadNumber(char head)
 	 * PRECONDITION: first character already read.
 	 * POSTCONDITION: all number characters have been read.
 	 */
+	bool isSkeep = false;
+	bool isFractional = false;
 	std::string value;
 	value += head;
 
-	while (m_position < m_sources.size() && IsDigit(m_sources[m_position]))
+	while (m_position < m_sources.size() && 
+		(IsDigit(m_sources[m_position]) || m_sources[m_position] == '.'))
+		//( && !isFractional))
 	{
+		// как проигнорировать все оставшиеся числа до нечислового
+		if (m_sources[m_position] == '.') //TODO можно проще
+		{
+			isFractional = true;
+		}
+		
 		value += m_sources[m_position];
 		++m_position;
 	}

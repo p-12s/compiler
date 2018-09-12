@@ -123,7 +123,7 @@ TEST_CASE("Can read expression tokens", "[CalcLexer]") {
 		Token{ TT_MULTIPLY },
 		Token{ TT_NUMBER, "4"s },
 		});
-#if 0 // fractional number support
+#if 1 // fractional number support
 	REQUIRE(Tokenize("5+7.005"sv) == TokenList{
 		Token{ TT_NUMBER, "5" },
 		Token{ TT_PLUS },
@@ -139,7 +139,7 @@ TEST_CASE("Can read expression tokens", "[CalcLexer]") {
 #endif
 }
 
-#if 0 // whitespace support
+#if 1 // whitespace support
 TEST_CASE("Can read one operator with whitespaces", "[CalcLexer]") {
 	REQUIRE(Tokenize("  +"sv) == TokenList{
 		Token{ TT_PLUS },
@@ -196,7 +196,7 @@ TEST_CASE("Can read one number with whitespaces", "[CalcLexer]") {
 		Token{ TT_NUMBER, "9" },
 		});
 	REQUIRE(Tokenize("   \n  15"sv) == TokenList{
-		Token{ TT_NUMBER, 15 },
+		Token{ TT_NUMBER, "15" },
 		});
 	REQUIRE(Tokenize("\t   \n  21.03"sv) == TokenList{
 		Token{ TT_NUMBER, "21.03" },
