@@ -26,6 +26,7 @@ bool IsDigit(char ch)
 		return false;
 	}
 }
+
 }
 
 CalcLexer::CalcLexer(std::string_view sources)
@@ -93,26 +94,40 @@ Token CalcLexer::ReadNumber(char head)
 	 * PRECONDITION: first character already read.
 	 * POSTCONDITION: all number characters have been read.
 	 */
-	bool isSkeep = false;
+	bool isSkeep = false; 
 	bool isFractional = false;
 	std::string value;
 	value += head;
 
+	if (m_position < m_sources.size() && 
+		head == '0' && IsDigit(m_sources[m_position])) // 01 or some not 0.
+	{
+		isSkeep = true;
+	}
+
 	while (m_position < m_sources.size() && 
 		(IsDigit(m_sources[m_position]) || m_sources[m_position] == '.'))
-		//( && !isFractional))
 	{
-		// как проигнорировать все оставшиеся числа до нечислового
-		if (m_sources[m_position] == '.') //TODO можно проще
+		// already fractional! skeep
+		if (m_sources[m_position] == '.' && isFractional)
 		{
-			isFractional = true;
+			isSkeep = true;
+		}
+
+		if (!isSkeep)
+		{
+			if (m_sources[m_position] == '.')
+			{
+				isFractional = true;
+			}
+
+			value += m_sources[m_position];
 		}
 		
-		value += m_sources[m_position];
 		++m_position;
 	}
 
-	return Token{ TT_NUMBER, value };
+	return isSkeep ? Token{ TT_ERROR } : Token{ TT_NUMBER, value };
 }
 
 }
