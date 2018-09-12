@@ -152,7 +152,6 @@ TEST_CASE("Can read expression tokens", "[CalcLexer]") {
 		Token{ TT_MULTIPLY },
 		Token{ TT_NUMBER, "0" },
 		});
-	//05 или 00.2, но 0.1 и 0
 #endif
 }
 
