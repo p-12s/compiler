@@ -321,7 +321,7 @@ TEST_CASE("Cannot read number which starts with zero") {
 // extended version of the grammar
 
 #if 1 
-TEST_CASE("Can read assigne, semicolon, opening and closing parenthesis", "[CalcLexer]") {
+TEST_CASE("Can read assigne, semicolon, opening and closing parenthesis tokens", "[CalcLexer]") {
 	REQUIRE(Tokenize("5=5"sv) == TokenList{
 		Token{ TT_NUMBER, "5" },
 		Token{ TT_ASSIGN },
@@ -339,5 +339,40 @@ TEST_CASE("Can read assigne, semicolon, opening and closing parenthesis", "[Calc
 		Token{ TT_NUMBER, "5" },
 		Token{ TT_CLOSING_PARENTHESIS },
 		});
+}
+#endif
+
+#if 1 
+TEST_CASE("Can read identifier token", "[CalcLexer]") {
+	/*REQUIRE(Tokenize("a=5"sv) == TokenList{
+		Token{ TT_ID, "a" },
+		Token{ TT_ASSIGN },
+		Token{ TT_NUMBER, "5" },
+		});
+	REQUIRE(Tokenize("a=b"sv) == TokenList{
+		Token{ TT_ID, "a" },
+		Token{ TT_ASSIGN },
+		Token{ TT_ID, "b" },
+		});
+	REQUIRE(Tokenize("_=3.2"sv) == TokenList{
+		Token{ TT_ID, "_" },
+		Token{ TT_ASSIGN },
+		Token{ TT_NUMBER, "3.2" },
+		});*/
+	REQUIRE(Tokenize("var"sv) == TokenList{
+		Token{ TT_ID, "var" },
+		});
+	// var = 5; 
+	/*
+	 * a = (1+ 3) - 4 / 5;
+	 * ()
+	 * ( 1 + b)
+	 * b1 1
+	 * _ 
+	 * _1
+	 * 1abc
+	 * 1abc + 5
+	 * 
+	 */
 }
 #endif
