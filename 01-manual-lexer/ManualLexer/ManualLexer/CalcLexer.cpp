@@ -64,6 +64,14 @@ Token CalcLexer::Read()
 		return Token{ TT_MULTIPLY };
 	case '/':
 		return Token{ TT_DIVIDE };
+	case '=':
+		return Token{ TT_ASSIGN };
+	case ';':
+		return Token{ TT_SEMICOLON };
+	case '(':
+		return Token{ TT_OPENING_PARENTHESIS };
+	case ')':
+		return Token{ TT_CLOSING_PARENTHESIS };
 	default:
 		break;
 	}

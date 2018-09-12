@@ -14,7 +14,12 @@ enum TokenType
 	TT_PLUS,
 	TT_MINUS,
 	TT_MULTIPLY,
-	TT_DIVIDE
+	TT_DIVIDE,
+	TT_ASSIGN,				// '='
+	TT_ID,
+	TT_SEMICOLON,			// ';'
+	TT_OPENING_PARENTHESIS, // '('
+	TT_CLOSING_PARENTHESIS	// ')'
 };
 
 struct Token

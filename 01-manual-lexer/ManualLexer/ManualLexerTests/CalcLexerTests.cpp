@@ -24,6 +24,22 @@ namespace calc
 			return "number";
 		case calc::TT_PLUS:
 			return "+";
+		case calc::TT_MINUS:
+			return "-";
+		case calc::TT_MULTIPLY:
+			return "*";
+		case calc::TT_DIVIDE:
+			return "/";
+		case calc::TT_ASSIGN:
+			return "=";
+		case calc::TT_ID:
+			return "identifier";
+		case calc::TT_SEMICOLON:
+			return ";";
+		case calc::TT_OPENING_PARENTHESIS:
+			return "(";
+		case calc::TT_CLOSING_PARENTHESIS:
+			return ")";
 		}
 		return "<UNEXPECTED!!!>";
 	}
@@ -298,6 +314,30 @@ TEST_CASE("Cannot read number which starts with zero") {
 		Token{ TT_ERROR },
 		Token{ TT_PLUS },
 		Token{ TT_NUMBER, "5.3" },
+		});
+}
+#endif
+
+// extended version of the grammar
+
+#if 1 
+TEST_CASE("Can read assigne, semicolon, opening and closing parenthesis", "[CalcLexer]") {
+	REQUIRE(Tokenize("5=5"sv) == TokenList{
+		Token{ TT_NUMBER, "5" },
+		Token{ TT_ASSIGN },
+		Token{ TT_NUMBER, "5" },
+		});
+	REQUIRE(Tokenize("; 5;5;"sv) == TokenList{
+		Token{ TT_SEMICOLON },
+		Token{ TT_NUMBER, "5" },
+		Token{ TT_SEMICOLON },
+		Token{ TT_NUMBER, "5" },
+		Token{ TT_SEMICOLON },
+		});
+	REQUIRE(Tokenize("(5)"sv) == TokenList{
+		Token{ TT_OPENING_PARENTHESIS },
+		Token{ TT_NUMBER, "5" },
+		Token{ TT_CLOSING_PARENTHESIS },
 		});
 }
 #endif
