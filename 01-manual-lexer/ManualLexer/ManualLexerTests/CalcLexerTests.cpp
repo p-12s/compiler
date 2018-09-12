@@ -136,6 +136,23 @@ TEST_CASE("Can read expression tokens", "[CalcLexer]") {
 		Token{ TT_PLUS },
 		Token{ TT_NUMBER, "1" },
 		});
+	REQUIRE(Tokenize("1940.1851/4.000149*1"sv) == TokenList{
+		Token{ TT_NUMBER, "1940.1851" },
+		Token{ TT_DIVIDE },
+		Token{ TT_NUMBER, "4.000149" },
+		Token{ TT_MULTIPLY },
+		Token{ TT_NUMBER, "1" },
+		});
+	REQUIRE(Tokenize("05-00.2/0.1*0"sv) == TokenList{
+		Token{ TT_ERROR },
+		Token{ TT_MINUS },
+		Token{ TT_ERROR },
+		Token{ TT_DIVIDE },
+		Token{ TT_NUMBER, "0.1" },
+		Token{ TT_MULTIPLY },
+		Token{ TT_NUMBER, "0" },
+		});
+	//05 или 00.2, но 0.1 и 0
 #endif
 }
 
