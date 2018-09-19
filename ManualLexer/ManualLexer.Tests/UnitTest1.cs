@@ -45,8 +45,6 @@ namespace ManualLexer.Tests
     [TestClass]
     public class CalcLexer_Tests
     {
-        // или сюда верхнюю функцию?
-
         List<Token> Tokenize(string text)
         {
             List<Token> results = new List<Token>();
@@ -59,11 +57,6 @@ namespace ManualLexer.Tests
             return results;
         }
 
-        public CalcLexer_Tests()
-        {
-            var a = new CalcLexer("0");
-        }
-
         public void AreTokensEqual(string str, List<Token> list)
         {
             Assert.IsTrue(Tokenize(str).SequenceEqual(list));
@@ -72,14 +65,77 @@ namespace ManualLexer.Tests
         [TestMethod]
         public void CanReadOneNumber()
         {
+            AreTokensEqual("1.",
+                new List<Token> {
+                    new Token(TokenType.TT_ERROR)
+                }
+            );
+
+            AreTokensEqual("# 1!",
+                new List<Token> {
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_NUMBER, "1"),
+                    new Token(TokenType.TT_ERROR)
+                }
+            );
+
+            AreTokensEqual("22. \t * 22.22@",
+                new List<Token> {
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_MULTIPLY),
+                    new Token(TokenType.TT_NUMBER, "22.22"),
+                    new Token(TokenType.TT_ERROR)
+                }
+            );
+            
             AreTokensEqual("0",
-                new List<Token> { new Token(TokenType.TT_NUMBER, "0") });
+                new List<Token> {
+                    new Token(TokenType.TT_NUMBER, "0")
+                }
+            );
 
             AreTokensEqual("1",
-                new List<Token> { new Token(TokenType.TT_NUMBER, "1") });
+                new List<Token> {
+                    new Token(TokenType.TT_NUMBER, "1")
+                }
+            );
 
             AreTokensEqual("9876543210",
-                new List<Token> { new Token(TokenType.TT_NUMBER, "9876543210") });
+                new List<Token> {
+                    new Token(TokenType.TT_NUMBER, "9876543210")
+                }
+            );
+
+            AreTokensEqual("0 $$$ $",
+                new List<Token> {
+                    new Token(TokenType.TT_NUMBER, "0"),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_ERROR)
+                }
+            );
+
+            AreTokensEqual("0 % $",
+                new List<Token> {
+                    new Token(TokenType.TT_NUMBER, "0"),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_ERROR)
+                }
+            );
+
+            AreTokensEqual("^2^ 10 % $ & *",
+                new List<Token> {
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_NUMBER, "2"),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_NUMBER, "10"),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_MULTIPLY)
+                }
+            );
         }
 
         [TestMethod]
@@ -496,12 +552,41 @@ namespace ManualLexer.Tests
         [TestMethod]
         public void CanReadIdentifierToken()
         {
+            AreTokensEqual("0123@ 123 @",
+                new List<Token> {
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_NUMBER, "123"),
+                    new Token(TokenType.TT_ERROR)
+                }
+            );
+
+            AreTokensEqual("123@ 123 @",
+                new List<Token> {
+                    new Token(TokenType.TT_NUMBER, "123"),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_NUMBER, "123"),
+                    new Token(TokenType.TT_ERROR)
+                }
+            );
+
+            AreTokensEqual("abc%^^f",
+                new List<Token> {
+                    new Token(TokenType.TT_ID, "abc"),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_ID, "f"),
+                }
+            );
+
             AreTokensEqual("1abc abc1",
                 new List<Token> {
                     new Token(TokenType.TT_ERROR),
                     new Token(TokenType.TT_ID, "abc1"),
                 }
             );
+
             AreTokensEqual("_1abc abc1",
                 new List<Token> {
                     new Token(TokenType.TT_ID, "_1abc"),
@@ -622,6 +707,82 @@ namespace ManualLexer.Tests
                     new Token(TokenType.TT_ID, "_1"),
                     new Token(TokenType.TT_PLUS),
                     new Token(TokenType.TT_ASSIGN)
+                }
+            );
+
+            AreTokensEqual("var = (1+ b  - (y - 2) / 3) * (i + 5)",
+                new List<Token> {
+                    new Token(TokenType.TT_ID, "var"),
+                    new Token(TokenType.TT_ASSIGN),
+                    new Token(TokenType.TT_OPENING_PARENTHESIS),
+                    new Token(TokenType.TT_NUMBER, "1"),
+                    new Token(TokenType.TT_PLUS),
+                    new Token(TokenType.TT_ID, "b"),
+                    new Token(TokenType.TT_MINUS),
+                    new Token(TokenType.TT_OPENING_PARENTHESIS),
+                    new Token(TokenType.TT_ID, "y"),
+                    new Token(TokenType.TT_MINUS),
+                    new Token(TokenType.TT_NUMBER, "2"),
+                    new Token(TokenType.TT_CLOSING_PARENTHESIS),
+                    new Token(TokenType.TT_DIVIDE),
+                    new Token(TokenType.TT_NUMBER, "3"),
+                    new Token(TokenType.TT_CLOSING_PARENTHESIS),
+                    new Token(TokenType.TT_MULTIPLY),
+                    new Token(TokenType.TT_OPENING_PARENTHESIS),
+                    new Token(TokenType.TT_ID, "i"),
+                    new Token(TokenType.TT_PLUS),
+                    new Token(TokenType.TT_NUMBER, "5"),
+                    new Token(TokenType.TT_CLOSING_PARENTHESIS)
+                }
+            );
+
+            AreTokensEqual("k = 4 / (8 + 1) - 5 * 9",
+                new List<Token> {
+                    new Token(TokenType.TT_ID, "k"),
+                    new Token(TokenType.TT_ASSIGN),
+                    new Token(TokenType.TT_NUMBER, "4"),
+                    new Token(TokenType.TT_DIVIDE),
+                    new Token(TokenType.TT_OPENING_PARENTHESIS),
+                    new Token(TokenType.TT_NUMBER, "8"),
+                    new Token(TokenType.TT_PLUS),
+                    new Token(TokenType.TT_NUMBER, "1"),
+                    new Token(TokenType.TT_CLOSING_PARENTHESIS),
+                    new Token(TokenType.TT_MINUS),
+                    new Token(TokenType.TT_NUMBER, "5"),
+                    new Token(TokenType.TT_MULTIPLY),
+                    new Token(TokenType.TT_NUMBER, "9")
+                }
+            );
+
+            AreTokensEqual("~ _ abc%f. y34. =  3.",
+                new List<Token> {
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_ID, "_"),
+                    new Token(TokenType.TT_ID, "abc"),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_ID, "f"),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_ID, "y34"),
+                    new Token(TokenType.TT_ERROR),
+                    new Token(TokenType.TT_ASSIGN),
+                    new Token(TokenType.TT_ERROR)
+                }
+            );
+
+            AreTokensEqual("y34 = x * x     + 3 * x - 17;",
+                new List<Token> {
+                    new Token(TokenType.TT_ID, "y34"),
+                    new Token(TokenType.TT_ASSIGN),
+                    new Token(TokenType.TT_ID, "x"),
+                    new Token(TokenType.TT_MULTIPLY),
+                    new Token(TokenType.TT_ID, "x"),
+                    new Token(TokenType.TT_PLUS),
+                    new Token(TokenType.TT_NUMBER, "3"),
+                    new Token(TokenType.TT_MULTIPLY),
+                    new Token(TokenType.TT_ID, "x"),
+                    new Token(TokenType.TT_MINUS),
+                    new Token(TokenType.TT_NUMBER, "17"),
+                    new Token(TokenType.TT_SEMICOLON)
                 }
             );
         }

@@ -112,6 +112,9 @@
                 ++m_position;
             }
 
+            if (value.Length > 1 && value[value.Length - 1] == '.')
+                wasIncorrectSequence = true;
+
             return wasIncorrectSequence ? 
                 new Token(TokenType.TT_ERROR) : 
                 new Token(TokenType.TT_NUMBER, value);
