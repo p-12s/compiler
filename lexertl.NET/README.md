@@ -1,4 +1,4 @@
-Автор(https://github.com/KonstantinGeist)
+Автор - <a href="https://github.com/KonstantinGeist">KonstantinGeist</a>
 
 Быстрая и грязная обёртка C# вокруг lexertl для тех, кто не хочет насиловать мозг C++
 
