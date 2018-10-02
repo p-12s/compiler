@@ -44,19 +44,7 @@ namespace TestProject
 
                 var stMachine = new StateMachine(rules);
 
-                //stMachine.minimize(); not work, no method in .dll
-
                 return stMachine;
-
-                /*
-                // Минимизируем детерминированный конечный автомат,
-                //  это занимает немного времени, но взамен ускорит работу сканера.
-                lexer->minimise();
-
-                // Генерируем table-driven лексер на C++,
-                // В качестве имени функции передаём LookupExprToken.
-                lexertl::table_based_cpp::generate_cpp("LookupExprToken", *lexer, false, std::cout);
-                */
             }
 
             var stateMachine = BuildCalcLexer();
