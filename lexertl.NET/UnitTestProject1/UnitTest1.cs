@@ -14,7 +14,7 @@ namespace UnitTestProject1
     {
         enum TokenType
         {
-            TT_ERROR = 1,// кастомная ошибка, для 05 или 00.2
+            TT_ERROR = -1,
             TT_NUMBER = 2,
             TT_PLUS = 3,
             TT_MINUS = 4,
@@ -41,7 +41,7 @@ namespace UnitTestProject1
             rules.Push("\\;", (int)TokenType.TT_SEMICOLON);
             rules.Push("\\(", (int)TokenType.TT_OPENING_PARENTHESIS);
             rules.Push("\\)", (int)TokenType.TT_CLOSING_PARENTHESIS);
-            rules.Push("0[\\d]*(\\.[\\d]*)+|0[\\d]+|[\\d]+[\\w]*", (int)TokenType.TT_ERROR);
+            rules.Push("0[\\d]*(\\.[\\d]*)+|0[\\d]+|[\\d]+[\\w]*|[\\d]+[.]+", (int)TokenType.TT_ERROR);
             rules.Push("[ \t\r\n]+", rules.Skip());
 
             var stMachine = new StateMachine(rules);
@@ -88,9 +88,9 @@ namespace UnitTestProject1
                 _stateMachine.GetTokens("# 1!"),
                 new List<Token>
                 {
-                    new Token(-1, "#"),
+                    new Token((int)TokenType.TT_ERROR, "#"),
                     new Token((int)TokenType.TT_NUMBER, "1"),
-                    new Token(-1, "!")
+                    new Token((int)TokenType.TT_ERROR, "!")
                 }
             );
 
@@ -104,11 +104,10 @@ namespace UnitTestProject1
             AreTokensEqual(
                 _stateMachine.GetTokens("22. \t * 22.22@"),
                 new List<Token> {
-                    new Token((int)TokenType.TT_NUMBER, "22"),
-                    new Token(-1, "."),
+                    new Token((int)TokenType.TT_ERROR, "22."),
                     new Token((int)TokenType.TT_MULTIPLY, "*"),
                     new Token((int)TokenType.TT_NUMBER, "22.22"),
-                    new Token(-1, "@"),
+                    new Token((int)TokenType.TT_ERROR, "@"),
                 }
             );
 
@@ -116,10 +115,10 @@ namespace UnitTestProject1
                 _stateMachine.GetTokens("0 $$$ $"),
                 new List<Token> {
                     new Token((int)TokenType.TT_NUMBER, "0"),
-                    new Token(-1, "$"),
-                    new Token(-1, "$"),
-                    new Token(-1, "$"),
-                    new Token(-1, "$")
+                    new Token((int)TokenType.TT_ERROR, "$"),
+                    new Token((int)TokenType.TT_ERROR, "$"),
+                    new Token((int)TokenType.TT_ERROR, "$"),
+                    new Token((int)TokenType.TT_ERROR, "$")
                 }
             );
 
@@ -127,21 +126,21 @@ namespace UnitTestProject1
                 _stateMachine.GetTokens("0 % $"),
                 new List<Token> {
                     new Token((int)TokenType.TT_NUMBER, "0"),
-                    new Token(-1, "%"),
-                    new Token(-1, "$")
+                    new Token((int)TokenType.TT_ERROR, "%"),
+                    new Token((int)TokenType.TT_ERROR, "$")
                 }
             );
 
             AreTokensEqual(
                 _stateMachine.GetTokens("^2^ 10 % $ & *"),
                 new List<Token> {
-                    new Token(-1, "^"),
+                    new Token((int)TokenType.TT_ERROR, "^"),
                     new Token((int)TokenType.TT_NUMBER, "2"),
-                    new Token(-1, "^"),
+                    new Token((int)TokenType.TT_ERROR, "^"),
                     new Token((int)TokenType.TT_NUMBER, "10"),
-                    new Token(-1, "%"),
-                    new Token(-1, "$"),
-                    new Token(-1, "&"),
+                    new Token((int)TokenType.TT_ERROR, "%"),
+                    new Token((int)TokenType.TT_ERROR, "$"),
+                    new Token((int)TokenType.TT_ERROR, "&"),
                     new Token((int)TokenType.TT_MULTIPLY, "*"),
                 }
             );
@@ -644,9 +643,9 @@ namespace UnitTestProject1
                 _stateMachine.GetTokens("0123@ 123 @"),
                 new List<Token> {
                     new Token((int)TokenType.TT_ERROR, "0123"),
-                    new Token(-1, "@"),
+                    new Token((int)TokenType.TT_ERROR, "@"),
                     new Token((int)TokenType.TT_NUMBER, "123"),
-                    new Token(-1, "@"),
+                    new Token((int)TokenType.TT_ERROR, "@"),
                 }
             );
 
@@ -654,9 +653,9 @@ namespace UnitTestProject1
                 _stateMachine.GetTokens("abc%^^f"),
                 new List<Token> {
                     new Token((int)TokenType.TT_ID, "abc"),
-                    new Token(-1, "%"),
-                    new Token(-1, "^"),
-                    new Token(-1, "^"),
+                    new Token((int)TokenType.TT_ERROR, "%"),
+                    new Token((int)TokenType.TT_ERROR, "^"),
+                    new Token((int)TokenType.TT_ERROR, "^"),
                     new Token((int)TokenType.TT_ID, "f"),
                 }
             );
@@ -734,7 +733,7 @@ namespace UnitTestProject1
                 }
             );
 
-            /*AreTokensEqual(
+            AreTokensEqual(
                 _stateMachine.GetTokens("a=b"),
                 new List<Token> {
                     new Token((int)TokenType.TT_ID, "a"),
@@ -770,7 +769,7 @@ namespace UnitTestProject1
                     new Token((int)TokenType.TT_NUMBER, "1"),
                     new Token((int)TokenType.TT_PLUS, "+"),
                     new Token((int)TokenType.TT_NUMBER, "3"),
-                    new Token((int)TokenType.TT_CLOSING_PARENTHESIS, "="),
+                    new Token((int)TokenType.TT_CLOSING_PARENTHESIS, ")"),
                     new Token((int)TokenType.TT_MINUS, "-"),
                     new Token((int)TokenType.TT_NUMBER, "4"),
                     new Token((int)TokenType.TT_DIVIDE, "/"),
@@ -807,7 +806,7 @@ namespace UnitTestProject1
                 }
             );
 
-            /*AreTokensEqual(
+            AreTokensEqual(
                 _stateMachine.GetTokens("var = (1+ b  - (y - 2) / 3) * (i + 5)"),
                 new List<Token> {
                     new Token((int)TokenType.TT_ID, "var"),
@@ -828,7 +827,7 @@ namespace UnitTestProject1
                     new Token((int)TokenType.TT_MULTIPLY, "*"),
                     new Token((int)TokenType.TT_OPENING_PARENTHESIS, "("),
                     new Token((int)TokenType.TT_ID, "i"),
-                    new Token((int)TokenType.TT_PLUS, "="),
+                    new Token((int)TokenType.TT_PLUS, "+"),
                     new Token((int)TokenType.TT_NUMBER, "5"),
                     new Token((int)TokenType.TT_CLOSING_PARENTHESIS, ")")
                 }
@@ -854,23 +853,27 @@ namespace UnitTestProject1
             );
 
             AreTokensEqual(
-                _stateMachine.GetTokens("~ _ abc%f. y34. =  3."),
+                _stateMachine.GetTokens("~ _ abc%f. y34. =3."),
                 new List<Token> {
-                    new Token(-1, "~"),
+                    new Token((int)TokenType.TT_ERROR, "~"),
                     new Token((int)TokenType.TT_ID, "_"),
                     new Token((int)TokenType.TT_ID, "abc"),
                     new Token((int)TokenType.TT_ERROR, "%"),
                     new Token((int)TokenType.TT_ID, "f"),
                     new Token((int)TokenType.TT_ERROR, "."),
-                    new Token((int)TokenType.TT_ERROR, "34."),
+                    new Token((int)TokenType.TT_ID, "y34"),
+                    new Token((int)TokenType.TT_ERROR, "."),
                     new Token((int)TokenType.TT_ASSIGN, "="),
                     new Token((int)TokenType.TT_ERROR, "3.")
                 }
             );
 
             AreTokensEqual(
-                _stateMachine.GetTokens("y34 = x * x     + 3 * x - 17;"),
+                _stateMachine.GetTokens("!~&y34 = x * x     + 3 * x - 17;"),
                 new List<Token> {
+                    new Token((int)TokenType.TT_ERROR, "!"),
+                    new Token((int)TokenType.TT_ERROR, "~"),
+                    new Token((int)TokenType.TT_ERROR, "&"),
                     new Token((int)TokenType.TT_ID, "y34"),
                     new Token((int)TokenType.TT_ASSIGN, "="),
                     new Token((int)TokenType.TT_ID, "x"),
@@ -884,7 +887,7 @@ namespace UnitTestProject1
                     new Token((int)TokenType.TT_NUMBER, "17"),
                     new Token((int)TokenType.TT_SEMICOLON, ";")
                 }
-            );*/
+            );
         }
 
 
