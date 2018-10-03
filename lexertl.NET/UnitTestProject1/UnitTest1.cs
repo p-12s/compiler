@@ -30,8 +30,7 @@ namespace UnitTestProject1
         StateMachine BuildCalcLexer()
         {
             Rules rules = new Rules();
-            //\d+(\.\d+)?   02..12 00002555.12  |[\\d]+[.]{1,}[.\\d]+
-            rules.Push("0[\\d]+[.]{1,}[\\d]+|0[\\d]+|[\\d]+[.]{1,}[\\d]+[.]{1,}[\\d]+", (int)TokenType.TT_ERROR);
+            
             rules.Push("[1-9]+[\\d]*[.]{1}[\\d]+|0{1}[.]{1}[\\d]+|[1-9]{1}[\\d]+|[\\d]{1}", (int)TokenType.TT_NUMBER);
             rules.Push("\\+", (int)TokenType.TT_PLUS);
             rules.Push("\\-", (int)TokenType.TT_MINUS);
@@ -41,7 +40,8 @@ namespace UnitTestProject1
             rules.Push("[a-zA-Z_]{1}[\\w]*", (int)TokenType.TT_ID);
             rules.Push("\\;", (int)TokenType.TT_SEMICOLON);
             rules.Push("\\(", (int)TokenType.TT_OPENING_PARENTHESIS);
-            rules.Push("\\)", (int)TokenType.TT_CLOSING_PARENTHESIS);            
+            rules.Push("\\)", (int)TokenType.TT_CLOSING_PARENTHESIS);
+            rules.Push("0[\\d]*(\\.[\\d]*)+|0[\\d]+|[\\d]+[\\w]*", (int)TokenType.TT_ERROR);
             rules.Push("[ \t\r\n]+", rules.Skip());
 
             var stMachine = new StateMachine(rules);
@@ -91,6 +91,13 @@ namespace UnitTestProject1
                     new Token(-1, "#"),
                     new Token((int)TokenType.TT_NUMBER, "1"),
                     new Token(-1, "!")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("123.0678 \t "),
+                new List<Token> {
+                    new Token((int)TokenType.TT_NUMBER, "123.0678")
                 }
             );
 
@@ -523,7 +530,7 @@ namespace UnitTestProject1
                 }
             );
 
-            /*AreTokensEqual(
+            AreTokensEqual(
                 _stateMachine.GetTokens("0..456789"),
                 new List<Token> {
                     new Token((int)TokenType.TT_ERROR, "0..456789"),
@@ -544,7 +551,7 @@ namespace UnitTestProject1
                     new Token((int)TokenType.TT_ERROR, "01.25"),
                 }
             );
-
+            
             AreTokensEqual(
                 _stateMachine.GetTokens("+01"),
                 new List<Token> {
@@ -582,9 +589,300 @@ namespace UnitTestProject1
             AreTokensEqual(
                 _stateMachine.GetTokens("02.4+5.3"),
                 new List<Token> {
-                    new Token((int)TokenType.TT_ERROR, "02"),
+                    new Token((int)TokenType.TT_ERROR, "02.4"),
                     new Token((int)TokenType.TT_PLUS, "+"),
                     new Token((int)TokenType.TT_NUMBER, "5.3")
+                }
+            );
+        }
+
+        [TestMethod]
+        public void CanReadAssigneSemicolonOpeningAndClosingParenthesisTokens()
+        {
+            AreTokensEqual(
+                _stateMachine.GetTokens("5=5"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_NUMBER, "5"),
+                    new Token((int)TokenType.TT_ASSIGN, "="),
+                    new Token((int)TokenType.TT_NUMBER, "5")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("; 5;5;"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_SEMICOLON, ";"),
+                    new Token((int)TokenType.TT_NUMBER, "5"),
+                    new Token((int)TokenType.TT_SEMICOLON, ";"),
+                    new Token((int)TokenType.TT_NUMBER, "5"),
+                    new Token((int)TokenType.TT_SEMICOLON, ";")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("(5)"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_OPENING_PARENTHESIS, "("),
+                    new Token((int)TokenType.TT_NUMBER, "5"),
+                    new Token((int)TokenType.TT_CLOSING_PARENTHESIS,")")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("()"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_OPENING_PARENTHESIS, "("),
+                    new Token((int)TokenType.TT_CLOSING_PARENTHESIS, ")")
+                }
+            );
+        }
+
+        [TestMethod]
+        public void CanReadIdentifierToken()
+        {
+            AreTokensEqual(
+                _stateMachine.GetTokens("0123@ 123 @"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ERROR, "0123"),
+                    new Token(-1, "@"),
+                    new Token((int)TokenType.TT_NUMBER, "123"),
+                    new Token(-1, "@"),
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("abc%^^f"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "abc"),
+                    new Token(-1, "%"),
+                    new Token(-1, "^"),
+                    new Token(-1, "^"),
+                    new Token((int)TokenType.TT_ID, "f"),
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("1abc abc1"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ERROR, "1abc"),
+                    new Token((int)TokenType.TT_ID, "abc1"),
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("_1abc abc1"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "_1abc"),
+                    new Token((int)TokenType.TT_ID, "abc1"),
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("var"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "var")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("1abc"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ERROR, "1abc")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("_abc12"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "_abc12"),
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("_"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "_")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("_1"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "_1")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("1abc + 5"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ERROR, "1abc"),
+                    new Token((int)TokenType.TT_PLUS, "+"),
+                    new Token((int)TokenType.TT_NUMBER, "5")
+                }
+            );
+        }
+
+        [TestMethod]
+        public void CanReadExpression()
+        {
+            AreTokensEqual(
+                _stateMachine.GetTokens("a=5"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "a"),
+                    new Token((int)TokenType.TT_ASSIGN, "="),
+                    new Token((int)TokenType.TT_NUMBER, "5")
+                }
+            );
+
+            /*AreTokensEqual(
+                _stateMachine.GetTokens("a=b"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "a"),
+                    new Token((int)TokenType.TT_ASSIGN, "="),
+                    new Token((int)TokenType.TT_ID, "b")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("_=3.2"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "_"),
+                    new Token((int)TokenType.TT_ASSIGN, "="),
+                    new Token((int)TokenType.TT_NUMBER, "3.2")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("variable=0.2222"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "variable"),
+                    new Token((int)TokenType.TT_ASSIGN, "="),
+                    new Token((int)TokenType.TT_NUMBER, "0.2222")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("a= (1+3)-    4 / 5;"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "a"),
+                    new Token((int)TokenType.TT_ASSIGN, "="),
+                    new Token((int)TokenType.TT_OPENING_PARENTHESIS, "("),
+                    new Token((int)TokenType.TT_NUMBER, "1"),
+                    new Token((int)TokenType.TT_PLUS, "+"),
+                    new Token((int)TokenType.TT_NUMBER, "3"),
+                    new Token((int)TokenType.TT_CLOSING_PARENTHESIS, "="),
+                    new Token((int)TokenType.TT_MINUS, "-"),
+                    new Token((int)TokenType.TT_NUMBER, "4"),
+                    new Token((int)TokenType.TT_DIVIDE, "/"),
+                    new Token((int)TokenType.TT_NUMBER, "5"),
+                    new Token((int)TokenType.TT_SEMICOLON, ";")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("( 1 + b)"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_OPENING_PARENTHESIS, "("),
+                    new Token((int)TokenType.TT_NUMBER, "1"),
+                    new Token((int)TokenType.TT_PLUS, "+"),
+                    new Token((int)TokenType.TT_ID, "b"),
+                    new Token((int)TokenType.TT_CLOSING_PARENTHESIS, ")")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("b1 1"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "b1"),
+                    new Token((int)TokenType.TT_NUMBER, "1")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("_1+="),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "_1"),
+                    new Token((int)TokenType.TT_PLUS, "+"),
+                    new Token((int)TokenType.TT_ASSIGN, "=")
+                }
+            );
+
+            /*AreTokensEqual(
+                _stateMachine.GetTokens("var = (1+ b  - (y - 2) / 3) * (i + 5)"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "var"),
+                    new Token((int)TokenType.TT_ASSIGN, "="),
+                    new Token((int)TokenType.TT_OPENING_PARENTHESIS, "("),
+                    new Token((int)TokenType.TT_NUMBER, "1"),
+                    new Token((int)TokenType.TT_PLUS, "+"),
+                    new Token((int)TokenType.TT_ID, "b"),
+                    new Token((int)TokenType.TT_MINUS, "-"),
+                    new Token((int)TokenType.TT_OPENING_PARENTHESIS, "("),
+                    new Token((int)TokenType.TT_ID, "y"),
+                    new Token((int)TokenType.TT_MINUS, "-"),
+                    new Token((int)TokenType.TT_NUMBER, "2"),
+                    new Token((int)TokenType.TT_CLOSING_PARENTHESIS, ")"),
+                    new Token((int)TokenType.TT_DIVIDE, "/"),
+                    new Token((int)TokenType.TT_NUMBER, "3"),
+                    new Token((int)TokenType.TT_CLOSING_PARENTHESIS, ")"),
+                    new Token((int)TokenType.TT_MULTIPLY, "*"),
+                    new Token((int)TokenType.TT_OPENING_PARENTHESIS, "("),
+                    new Token((int)TokenType.TT_ID, "i"),
+                    new Token((int)TokenType.TT_PLUS, "="),
+                    new Token((int)TokenType.TT_NUMBER, "5"),
+                    new Token((int)TokenType.TT_CLOSING_PARENTHESIS, ")")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("k = 4 / (8 + 1) - 5 * 9"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "k"),
+                    new Token((int)TokenType.TT_ASSIGN, "="),
+                    new Token((int)TokenType.TT_NUMBER, "4"),
+                    new Token((int)TokenType.TT_DIVIDE, "/"),
+                    new Token((int)TokenType.TT_OPENING_PARENTHESIS, "("),
+                    new Token((int)TokenType.TT_NUMBER, "8"),
+                    new Token((int)TokenType.TT_PLUS, "+"),
+                    new Token((int)TokenType.TT_NUMBER, "1"),
+                    new Token((int)TokenType.TT_CLOSING_PARENTHESIS, ")"),
+                    new Token((int)TokenType.TT_MINUS, "-"),
+                    new Token((int)TokenType.TT_NUMBER, "5"),
+                    new Token((int)TokenType.TT_MULTIPLY, "*"),
+                    new Token((int)TokenType.TT_NUMBER, "9")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("~ _ abc%f. y34. =  3."),
+                new List<Token> {
+                    new Token(-1, "~"),
+                    new Token((int)TokenType.TT_ID, "_"),
+                    new Token((int)TokenType.TT_ID, "abc"),
+                    new Token((int)TokenType.TT_ERROR, "%"),
+                    new Token((int)TokenType.TT_ID, "f"),
+                    new Token((int)TokenType.TT_ERROR, "."),
+                    new Token((int)TokenType.TT_ERROR, "34."),
+                    new Token((int)TokenType.TT_ASSIGN, "="),
+                    new Token((int)TokenType.TT_ERROR, "3.")
+                }
+            );
+
+            AreTokensEqual(
+                _stateMachine.GetTokens("y34 = x * x     + 3 * x - 17;"),
+                new List<Token> {
+                    new Token((int)TokenType.TT_ID, "y34"),
+                    new Token((int)TokenType.TT_ASSIGN, "="),
+                    new Token((int)TokenType.TT_ID, "x"),
+                    new Token((int)TokenType.TT_MULTIPLY, "*"),
+                    new Token((int)TokenType.TT_ID, "x"),
+                    new Token((int)TokenType.TT_PLUS, "+"),
+                    new Token((int)TokenType.TT_NUMBER, "3"),
+                    new Token((int)TokenType.TT_MULTIPLY, "*"),
+                    new Token((int)TokenType.TT_ID, "x"),
+                    new Token((int)TokenType.TT_MINUS, "-"),
+                    new Token((int)TokenType.TT_NUMBER, "17"),
+                    new Token((int)TokenType.TT_SEMICOLON, ";")
                 }
             );*/
         }
