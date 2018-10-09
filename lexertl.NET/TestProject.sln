@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2043
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject", "TestProject\TestProject.csproj", "{0D7D9F79-F764-4671-9AED-1E1D6B4C4391}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexertlNetApp", "TestProject\LexertlNetApp.csproj", "{0D7D9F79-F764-4671-9AED-1E1D6B4C4391}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject1", "UnitTestProject1\UnitTestProject1.csproj", "{6A0E92E6-B2B6-405E-9BDC-DFA18FA88858}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexertlNetTest", "UnitTestProject1\LexertlNetTest.csproj", "{6A0E92E6-B2B6-405E-9BDC-DFA18FA88858}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

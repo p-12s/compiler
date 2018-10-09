@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using lexertl;
 
 namespace TestProject
@@ -8,7 +7,7 @@ namespace TestProject
     {
         public enum TokenType
         {
-            TT_ERROR = 1,
+            TT_ERROR = -1,
             TT_NUMBER = 2,
             TT_PLUS = 3,
             TT_MINUS = 4,

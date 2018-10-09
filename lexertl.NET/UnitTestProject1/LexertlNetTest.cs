@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using lexertl;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UnitTestProject1
+namespace LexertlNetTest
 {
     // библиотека взята тут:
     // https://github.com/KonstantinGeist/lexertl.NET/
 
     [TestClass]
-    public class UnitTest1
+    public class LexertlNetTests
     {
         enum TokenType
         {
-            TT_ERROR = -1,
+            TT_ERROR = 1,
             TT_NUMBER = 2,
             TT_PLUS = 3,
             TT_MINUS = 4,
@@ -88,9 +86,9 @@ namespace UnitTestProject1
                 _stateMachine.GetTokens("# 1!"),
                 new List<Token>
                 {
-                    new Token((int)TokenType.TT_ERROR, "#"),
+                    new Token(-1, "#"),
                     new Token((int)TokenType.TT_NUMBER, "1"),
-                    new Token((int)TokenType.TT_ERROR, "!")
+                    new Token(-1, "!")
                 }
             );
 
@@ -107,7 +105,7 @@ namespace UnitTestProject1
                     new Token((int)TokenType.TT_ERROR, "22."),
                     new Token((int)TokenType.TT_MULTIPLY, "*"),
                     new Token((int)TokenType.TT_NUMBER, "22.22"),
-                    new Token((int)TokenType.TT_ERROR, "@"),
+                    new Token(-1, "@"),
                 }
             );
 
@@ -115,10 +113,10 @@ namespace UnitTestProject1
                 _stateMachine.GetTokens("0 $$$ $"),
                 new List<Token> {
                     new Token((int)TokenType.TT_NUMBER, "0"),
-                    new Token((int)TokenType.TT_ERROR, "$"),
-                    new Token((int)TokenType.TT_ERROR, "$"),
-                    new Token((int)TokenType.TT_ERROR, "$"),
-                    new Token((int)TokenType.TT_ERROR, "$")
+                    new Token(-1, "$"),
+                    new Token(-1, "$"),
+                    new Token(-1, "$"),
+                    new Token(-1, "$")
                 }
             );
 
@@ -126,21 +124,21 @@ namespace UnitTestProject1
                 _stateMachine.GetTokens("0 % $"),
                 new List<Token> {
                     new Token((int)TokenType.TT_NUMBER, "0"),
-                    new Token((int)TokenType.TT_ERROR, "%"),
-                    new Token((int)TokenType.TT_ERROR, "$")
+                    new Token(-1, "%"),
+                    new Token(-1, "$")
                 }
             );
 
             AreTokensEqual(
                 _stateMachine.GetTokens("^2^ 10 % $ & *"),
                 new List<Token> {
-                    new Token((int)TokenType.TT_ERROR, "^"),
+                    new Token(-1, "^"),
                     new Token((int)TokenType.TT_NUMBER, "2"),
-                    new Token((int)TokenType.TT_ERROR, "^"),
+                    new Token(-1, "^"),
                     new Token((int)TokenType.TT_NUMBER, "10"),
-                    new Token((int)TokenType.TT_ERROR, "%"),
-                    new Token((int)TokenType.TT_ERROR, "$"),
-                    new Token((int)TokenType.TT_ERROR, "&"),
+                    new Token(-1, "%"),
+                    new Token(-1, "$"),
+                    new Token(-1, "&"),
                     new Token((int)TokenType.TT_MULTIPLY, "*"),
                 }
             );
@@ -643,9 +641,9 @@ namespace UnitTestProject1
                 _stateMachine.GetTokens("0123@ 123 @"),
                 new List<Token> {
                     new Token((int)TokenType.TT_ERROR, "0123"),
-                    new Token((int)TokenType.TT_ERROR, "@"),
+                    new Token(-1, "@"),
                     new Token((int)TokenType.TT_NUMBER, "123"),
-                    new Token((int)TokenType.TT_ERROR, "@"),
+                    new Token(-1, "@"),
                 }
             );
 
@@ -653,9 +651,9 @@ namespace UnitTestProject1
                 _stateMachine.GetTokens("abc%^^f"),
                 new List<Token> {
                     new Token((int)TokenType.TT_ID, "abc"),
-                    new Token((int)TokenType.TT_ERROR, "%"),
-                    new Token((int)TokenType.TT_ERROR, "^"),
-                    new Token((int)TokenType.TT_ERROR, "^"),
+                    new Token(-1, "%"),
+                    new Token(-1, "^"),
+                    new Token(-1, "^"),
                     new Token((int)TokenType.TT_ID, "f"),
                 }
             );
@@ -855,14 +853,14 @@ namespace UnitTestProject1
             AreTokensEqual(
                 _stateMachine.GetTokens("~ _ abc%f. y34. =3."),
                 new List<Token> {
-                    new Token((int)TokenType.TT_ERROR, "~"),
+                    new Token(-1, "~"),
                     new Token((int)TokenType.TT_ID, "_"),
                     new Token((int)TokenType.TT_ID, "abc"),
-                    new Token((int)TokenType.TT_ERROR, "%"),
+                    new Token(-1, "%"),
                     new Token((int)TokenType.TT_ID, "f"),
-                    new Token((int)TokenType.TT_ERROR, "."),
+                    new Token(-1, "."),
                     new Token((int)TokenType.TT_ID, "y34"),
-                    new Token((int)TokenType.TT_ERROR, "."),
+                    new Token(-1, "."),
                     new Token((int)TokenType.TT_ASSIGN, "="),
                     new Token((int)TokenType.TT_ERROR, "3.")
                 }
@@ -871,9 +869,9 @@ namespace UnitTestProject1
             AreTokensEqual(
                 _stateMachine.GetTokens("!~&y34 = x * x     + 3 * x - 17;"),
                 new List<Token> {
-                    new Token((int)TokenType.TT_ERROR, "!"),
-                    new Token((int)TokenType.TT_ERROR, "~"),
-                    new Token((int)TokenType.TT_ERROR, "&"),
+                    new Token(-1, "!"),
+                    new Token(-1, "~"),
+                    new Token(-1, "&"),
                     new Token((int)TokenType.TT_ID, "y34"),
                     new Token((int)TokenType.TT_ASSIGN, "="),
                     new Token((int)TokenType.TT_ID, "x"),
