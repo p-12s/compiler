@@ -4,17 +4,18 @@ using lexertl;
 
 namespace TestProject
 {
+    public interface IParser
+    {
+        void Run();
+    }
+
     public class Parser : IParser
     {
         private StateMachine _stateMachine;
-
         private Token _currentToken;
         private double _numberValue;
-        private string _stringValue;
         private Dictionary<string, double> _variables;
         private int _noOfErrors;
-
-        // мои кастомные поля
         private Token[] _tokens;
         private int _pointerToToken;
 
@@ -35,7 +36,12 @@ namespace TestProject
             _stateMachine = new StateMachine(rules);
 
             _numberValue = 0;
-            _variables = new Dictionary<string, double>();
+            _variables = new Dictionary<string, double>
+            {
+                { "pi", 3.1415926535897932385 },
+                { "e", 2.7182818284590452354 }
+            };
+
             _noOfErrors = 0;
             _tokens = null;
             _currentToken = new Token((int)TokenType.TT_SEMICOLON, ";");
@@ -60,11 +66,13 @@ namespace TestProject
             }
         }
 
-        private double Expr(bool get)       // add and subtract
+        #region Private members
+
+        private double Expr(bool get)
         {
             double left = Term(get);
 
-            for ( ; ; )              // ``forever''
+            for ( ; ; )
             {
                 switch (_currentToken.Id)
                 {
@@ -84,14 +92,18 @@ namespace TestProject
 
         private void GetToken()
         {
-            ++_pointerToToken;
             if (_pointerToToken < _tokens.Length)
+            {
                 _currentToken = _tokens[_pointerToToken];
+                ++_pointerToToken;
+            }
             else
+            {
                 _currentToken = new Token(0, "");
+            }
         }
 
-        private double Error(string message) // нафифга возвращать число?
+        private double Error(string message)
         {
             _noOfErrors++;
             Console.WriteLine("error: {0}", message);
@@ -102,28 +114,44 @@ namespace TestProject
         {
             if (get) GetToken();
 
+            string stringValue;
             switch (_currentToken.Id)
             {
-                case (int) TokenType.TT_NUMBER:        // floating-point constant                    
-                    double v = _numberValue;
+                case (int) TokenType.TT_NUMBER:                  
+                    _numberValue = Convert.ToDouble(_currentToken.Value);
                     GetToken();
-                    return v;
+                    return _numberValue;
 
                 case (int) TokenType.TT_ID:
-                    double v1 = _variables[_stringValue];
+                    stringValue = _currentToken.Value;
+                    
+                    double v1;
+                    if (_variables.ContainsKey(_currentToken.Value))
+                    {
+                        v1 = Convert.ToDouble(_variables[_currentToken.Value]);
+                    }
+                    else
+                    {
+                        _variables.Add(_currentToken.Value, 0);
+                        v1 = Convert.ToDouble(_variables[_currentToken.Value]);
+                    }
+
                     GetToken();
-                    if (_currentToken.Id == (int)TokenType.TT_ASSIGN)
+                    if (_currentToken.Id == (int) TokenType.TT_ASSIGN)
+                    {
                         v1 = Expr(true);
+                        _variables[stringValue] = v1;
+                    }
                     return v1;
 
-                case (int) TokenType.TT_MINUS:     // unary minus
+                case (int) TokenType.TT_MINUS:
                     return -Prim(true);
 
                 case (int) TokenType.TT_OPENING_PARENTHESIS:
                     double e = Expr(true);
-                    if (_currentToken.Id == (int) TokenType.TT_CLOSING_PARENTHESIS)
+                    if (_currentToken.Id != (int) TokenType.TT_CLOSING_PARENTHESIS)
                         return Error(") expected");
-                    GetToken();        // eat ')'
+                    GetToken();
                     return e;
 
                 default:
@@ -131,7 +159,7 @@ namespace TestProject
             }
         }
 
-        private double Term(bool get)       // multiply and divide
+        private double Term(bool get)
         {
             double left = Prim(get);
 
@@ -154,11 +182,10 @@ namespace TestProject
                     default:
                         return left;
                 }
-
             }
-
         }
 
+        #endregion
 
     }
 }

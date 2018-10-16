@@ -10,7 +10,7 @@
         TT_DIVIDE = 6,
         TT_ASSIGN = 7,                  // '='
         TT_ID = 8,
-        TT_SEMICOLON = 9,               // ';' PRINT
+        TT_SEMICOLON = 9,               // ';' 
         TT_OPENING_PARENTHESIS = 10,    // '(' LP
         TT_CLOSING_PARENTHESIS = 11     // ')' RP
     };
