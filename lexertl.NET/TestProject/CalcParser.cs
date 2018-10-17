@@ -4,14 +4,14 @@ using lexertl;
 
 namespace TestProject
 {
-    public interface IParser
+    public interface ICalculate // реализация (отношение "реализовывает"), т.к. у меня рекурсивное использование методов
     {
-        void Run();
+        double Calculate(string source);
     }
 
-    public class Parser : IParser
+    public class CalcParser : ICalculate
     {
-        private StateMachine _stateMachine;
+        private StateMachine _stateMachine; // композиция (отношение "имеет")
         private Token _currentToken;
         private double _numberValue;
         private Dictionary<string, double> _variables;
@@ -19,7 +19,7 @@ namespace TestProject
         private Token[] _tokens;
         private int _pointerToToken;
 
-        public Parser()
+        public CalcParser()
         {
             Rules rules = new Rules();
             rules.Push("[0-9]+", (int)TokenType.TT_NUMBER);
@@ -47,23 +47,18 @@ namespace TestProject
             _currentToken = new Token((int)TokenType.TT_SEMICOLON, ";");
         }
 
-        public void Run()
+        public double Calculate(string source)
         {
-            string input = string.Empty;
+            double result = 0;
+            _tokens = _stateMachine.GetTokens(source);
 
-            while (true)
-            {
-                input = Console.ReadLine();
-                _tokens = _stateMachine.GetTokens(input);
+            GetToken();
+            if (_currentToken.Id == 0) return result;
+            if (_currentToken.Id == (int)TokenType.TT_SEMICOLON) return result;
 
-                GetToken();
-                if (_currentToken.Id == 0) break;
-                if (_currentToken.Id == (int) TokenType.TT_SEMICOLON) continue;
-
-                Console.WriteLine(Expr(false));
-
-                _pointerToToken = 0;
-            }
+            result = Expr(false);
+            _pointerToToken = 0;
+            return result;
         }
 
         #region Private members
