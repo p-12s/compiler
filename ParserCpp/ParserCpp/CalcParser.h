@@ -15,28 +15,18 @@ struct Token
 	Token(int id, const std::string& value)
 		:id(id), value(value)
 	{
-
 	}
 };
 
 class CalcParser
 {
 private:
-	/*lexertl::state_machine m_stateMachine;
-	Token m_currentToken;
-	double m_numberValue;
 	std::map<std::string, double> m_variables;
+	double m_numberValue = 0.0f;
 	int m_noOfErrors = 0;
-	std::vector<Token> m_tokens;
-	int m_pointerToToken;//указатель?
-	*/
-
 	int m_pointerToToken = 0;
 	std::vector<Token> m_tokens;
-
-	//std::make_unique<lexertl::state_machine> m_lexer;
-	std::unique_ptr<lexertl::state_machine> _stateMachine;
-
+	std::unique_ptr<lexertl::state_machine> m_stateMachine;
 	Token m_currentToken{ TT_SEMICOLON, ";" };
 
 public:
@@ -49,11 +39,9 @@ private:
 
 	void GetToken();
 
-	/*double Error(std::string message);
+	double Error(const std::string& message);
 
 	double Prim(bool get);
 
 	double Term(bool get);
-
-	*/
 };

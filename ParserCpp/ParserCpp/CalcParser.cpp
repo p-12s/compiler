@@ -21,7 +21,7 @@ CalcParser::CalcParser()
 	auto lexer = std::make_unique<lexertl::state_machine>();
 	lexertl::generator::build(rules, *lexer);
 
-	_stateMachine = std::move(lexer);
+	m_stateMachine = std::move(lexer);
 }
 
 
@@ -43,7 +43,7 @@ double CalcParser::Calculate(const std::string& source)
 	double result = 0;
 
 	//_tokens = _stateMachine.GetTokens(source);
-	lexertl::siterator begin(source.begin(), source.end(), *_stateMachine);
+	lexertl::siterator begin(source.begin(), source.end(), *m_stateMachine);
 	lexertl::siterator end;
 	for (auto& it = begin; it != end; ++it)
 	{
@@ -60,134 +60,115 @@ double CalcParser::Calculate(const std::string& source)
 	return result;
 }
 
-double CalcParser::Expr(bool get)
+double CalcParser::Error(const std::string& message)
 {
-	return 0.0f;
+	m_noOfErrors++;
+	std::cout << "error: " << message << std::endl;
+	return 1;
 }
 
-/*double Error(std::string message)
+double CalcParser::Prim(bool get)
+{
+	if (get) GetToken();
+
+	std::string stringValue;
+	switch (m_currentToken.id)
 	{
-		m_noOfErrors++;
-		std"error: {0}", message);
-		return 1;
+	case TokenType::TT_NUMBER:
+	{
+		m_numberValue = atof(m_currentToken.value.c_str());
+		GetToken();
+		return m_numberValue;
 	}
-
-
-		private double Expr(bool get)
+	case TokenType::TT_ID:
 	{
-		double left = Term(get);
+		stringValue = m_currentToken.value;
 
-		for (; ; )
+		double v1;
+
+		//auto it = m_variables.find(m_currentToken.value);
+		if (m_variables.find(m_currentToken.value) != m_variables.end())
 		{
-			switch (_currentToken.Id)
-			{
-			case (int)TokenType.TT_PLUS:
-				left += Term(true);
-				break;
-
-			case (int)TokenType.TT_MINUS:
-				left -= Term(true);
-				break;
-
-			default:
-				return left;
-			}
-		}
-	}
-
-	private void GetToken()
-	{
-		if (_pointerToToken < _tokens.Length)
-		{
-			_currentToken = _tokens[_pointerToToken];
-			++_pointerToToken;
+			v1 = m_variables[m_currentToken.value];
+			//v1 = Convert.ToDouble(_variables[_currentToken.Value]);
 		}
 		else
 		{
-			_currentToken = new Token(0, "");
+			m_variables.emplace(m_currentToken.value, 0);
+			v1 = m_variables[m_currentToken.value];
 		}
-	}
 
-	private double Error(string message)
-	{
-		_noOfErrors++;
-		Console.WriteLine("error: {0}", message);
-		return 1;
-	}
-
-	private double Prim(bool get)
-	{
-		if (get) GetToken();
-
-		string stringValue;
-		switch (_currentToken.Id)
+		GetToken();
+		if (m_currentToken.id == TokenType::TT_ASSIGN)
 		{
-		case (int)TokenType.TT_NUMBER:
-			_numberValue = Convert.ToDouble(_currentToken.Value);
-			GetToken();
-			return _numberValue;
+			v1 = Expr(true);
+			m_variables[stringValue] = v1;
+		}
+		return v1;
+	}
+	case TokenType::TT_MINUS:
+	{
+		return -Prim(true);
+	}
+	case TokenType::TT_OPENING_PARENTHESIS:
+	{
+		double e = Expr(true);
+		if (m_currentToken.id != TokenType::TT_CLOSING_PARENTHESIS)
+			return Error(") expected");
+		GetToken();
+		return e;
+	}
+	default:
+		return Error("primary expected");		
+	}
+}
 
-		case (int)TokenType.TT_ID:
-			stringValue = _currentToken.Value;
+double CalcParser::Expr(bool get)
+{
+	double left = Term(get);
 
-			double v1;
-			if (_variables.ContainsKey(_currentToken.Value))
-			{
-				v1 = Convert.ToDouble(_variables[_currentToken.Value]);
-			}
-			else
-			{
-				_variables.Add(_currentToken.Value, 0);
-				v1 = Convert.ToDouble(_variables[_currentToken.Value]);
-			}
+	for ( ; ; )
+	{
+		switch (m_currentToken.id)
+		{
+		case TokenType::TT_PLUS:
+			left += Term(true);
+			break;
 
-			GetToken();
-			if (_currentToken.Id == (int)TokenType.TT_ASSIGN)
-			{
-				v1 = Expr(true);
-				_variables[stringValue] = v1;
-			}
-			return v1;
-
-		case (int)TokenType.TT_MINUS:
-			return -Prim(true);
-
-		case (int)TokenType.TT_OPENING_PARENTHESIS:
-			double e = Expr(true);
-			if (_currentToken.Id != (int)TokenType.TT_CLOSING_PARENTHESIS)
-				return Error(") expected");
-			GetToken();
-			return e;
+		case TokenType::TT_MINUS:
+			left -= Term(true);
+			break;
 
 		default:
-			return Error("primary expected");
+			return left;
 		}
 	}
+}
 
-	private double Term(bool get)
+double CalcParser::Term(bool get)
+{
+	double left = Prim(get);
+
+	for ( ; ; )
 	{
-		double left = Prim(get);
-
-		for (; ; )
+		switch (m_currentToken.id)
 		{
-			switch (_currentToken.Id)
+			case TokenType::TT_MULTIPLY:
 			{
-			case (int)TokenType.TT_MULTIPLY:
 				left *= Prim(true);
 				break;
-
-			case (int)TokenType.TT_DIVIDE:
+			}
+			case TokenType::TT_DIVIDE:
+			{
 				double d = Prim(true);
 				if (d == 0)
 					return Error("divide by 0");
 
 				left /= d;
 				break;
-
+			}
 			default:
 				return left;
-			}
 		}
 	}
-
-*/
+}
