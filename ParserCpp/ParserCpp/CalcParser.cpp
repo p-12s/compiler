@@ -57,7 +57,14 @@ double CalcParser::Calculate(const std::string& source)
 
 	result = Expr(false);
 	m_pointerToToken = 0;
+
+	// Ќ”∆Ќќ пон€ть, что лишнее в этом классе и разнести их в разные
+
+	// попробуем искус-но обнулить
+	m_tokens.clear();
+
 	return result;
+	// ќ—“јЌќ¬»Ћя “”“: m_tokens не обнул€етс€, токены складируютс€ друг за другом но считываетс€ только 1 экспрешен
 }
 
 double CalcParser::Error(const std::string& message)
